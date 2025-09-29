@@ -1,0 +1,36 @@
+/**
+ * Plugin Name: Dinamik VirtualPOS
+ * Description: WooCommerce için sanal POS entegrasyonu
+ * Version: 1.0
+ */
+
+/* Form stillerini import et */
+@import url('style-form.css?v=1.0.7');
+
+/* Rates stillerini import et */
+@import url('style-rates.css?v=1.0.0');
+
+
+
+.payment-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.form-group label {
+    display: inline;
+    background-color: white;
+    position: relative;
+    bottom: -0.7rem;
+    left: 0.5rem;
+    padding-left: 0.3rem;
+    padding-right: 0.3rem;
+
+}
+
+@media (max-width: 767px) {
+    .payment-container {
+        flex-direction: column;
+    }
+}
