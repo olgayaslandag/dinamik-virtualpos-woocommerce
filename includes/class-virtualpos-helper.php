@@ -46,7 +46,7 @@ class VirtualPOS_Helper {
         $params = [
             'merchant_id'     => $merchant_id,
             'user_ip'         => self::get_user_ip(),
-            'merchant_oid'    => $order->get_id() . time(),
+            'merchant_oid'    => time() . 'PAYTRWOO' . $order->get_id(),            
             'email'           => $order->get_billing_email(),
             'payment_type'    => 'card',
             'payment_amount'  => $price,
@@ -80,7 +80,7 @@ class VirtualPOS_Helper {
         include plugin_dir_path(__FILE__) . "../views/{$template_name}.php";
     }
 
-    public static function hesapla_taksitler($oranlar, $fiyat, $brand) 
+    public static function hesapla_taksitler($oranlar, $fiyat, $brand, $reflect) 
     {
         $sonuc = [];
         foreach ($oranlar as $key => $oran) {
@@ -90,7 +90,7 @@ class VirtualPOS_Helper {
 
             if ($taksitSayisi > 0) {
                 // Toplam fiyat = ana fiyat + oran
-                $toplam = $fiyat * (1 + $oran / 100);
+                $toplam = $reflect === "yes" ? $fiyat * (1 + $oran / 100) : $fiyat;
 
                 // Aylık taksit
                 $aylik = $toplam / $taksitSayisi;

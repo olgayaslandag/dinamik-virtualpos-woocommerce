@@ -1,21 +1,28 @@
 <?php
-class VirtualPOS_FormRenderer {
-    public static function render($order, $single_payment_total, $params) {
-        
+class VirtualPOS_FormRenderer 
+{
+    public static function render($order, $single_payment_total, $params, $gateway) 
+    {
         wc_print_notices(); // Başarısız ödeme sonrası anında notice göster
+
+        self::render_form($order, $single_payment_total, $params);
+        self::render_rates($order, $gateway);
+    }
+
+    private static function render_form($order, $single_payment_total, $params) 
+    {
         VirtualPOS_Helper::load_template('form', compact('order', 'single_payment_total', 'params'));
+    }
 
-
-
-        // PayTR taksit oranlarını getir
-        require_once plugin_dir_path(__FILE__) . 'class-payment-gateway.php';
-        $installmentService = new Installment_Service(new Dinamik_VirtualPOS_Gateway());
+    private static function render_rates($order, $gateway) 
+    {
+        $installmentService = new Installment_Service($gateway);
         $result = $installmentService->fetch_installments();        
         
-        $body = $result['data'];
-        $oranlar = $body['oranlar'] ?? [];       
-        $amount = $order->get_total();
-        VirtualPOS_Helper::load_template('rates-old', compact('oranlar', 'amount'));
-        
+        $oranlar = $result['data']['oranlar'] ?? [];       
+        $amount  = $order->get_total();
+        $reflect = $gateway->get_option('reflect');
+
+        VirtualPOS_Helper::load_template('rates', compact('oranlar', 'amount', 'reflect'));
     }
 }

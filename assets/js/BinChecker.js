@@ -11,6 +11,7 @@
             const digits = Utilities.onlyNumbers($(e.target).val());
             const $select = $('select#installment');
             const $info = $('#card-type');
+            const $orderTotal = $('input[name=order_total]');
 
             if (digits.length >= 6) {
                 const bin = digits.substr(0,6);
@@ -23,8 +24,10 @@
                 $.post(virtualpos_params.ajax_url, {
                     action: 'dinamik_bin_lookup',
                     security: virtualpos_params.security,
-                    bin
+                    bin,
+                    order_total: $orderTotal.val()
                 }, (res) => {
+                    console.log(res)
                     if (!res || !res.success) {
                         $info.text('Kart bilgisi bulunamadı');
                         return;

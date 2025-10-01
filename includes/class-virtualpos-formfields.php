@@ -48,6 +48,12 @@ class VirtualPOS_FormFields
                 'type'    => 'checkbox',
                 'label'   => 'Test modunu etkinleştir',
                 'default' => 'yes',
+            ],
+            'reflect' => [
+                'title'   => 'Vade Farkı Yansıt',
+                'type'    => 'checkbox',
+                'label'   => 'Vade farkı yansıt',
+                'default' => 'yes',
             ]
         ];
     }

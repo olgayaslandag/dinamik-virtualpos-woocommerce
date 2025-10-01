@@ -4,6 +4,7 @@
     <form class="virtualpos_payment_form" method="post" action="https://www.paytr.com/odeme">
         <?php wp_nonce_field('virtualpos_payment_action', 'virtualpos_payment_nonce'); ?> 
         <input type="hidden" name="single_payment_total" value="<?php echo $single_payment_total; ?>">
+        <input type="hidden" name="order_total" value="<?php echo $order->get_total(); ?>">
 
         <?php foreach ([] as $key => $value): ?>
             <input type="hidden" name="<?php echo esc_attr($key); ?>" value="<?php echo esc_attr($value); ?>">

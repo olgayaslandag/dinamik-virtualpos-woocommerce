@@ -69,13 +69,6 @@ class Dinamik_VirtualPOS_Gateway extends WC_Payment_Gateway
             echo '<p>Ödemeniz alındı. Teşekkür ederiz!</p>';
             return;
         }
-
-        /*
-        $processor = new VirtualPOS_PaymentProcessor($this);
-        if ($processor->handle_form_submission($order_id)) {
-            return;
-        }
-        */
         
         $discount_rate = intval(get_option('_iskonto_nakit', 10));
         $discount_multiplier = (100 - $discount_rate) / 100;
@@ -84,7 +77,7 @@ class Dinamik_VirtualPOS_Gateway extends WC_Payment_Gateway
         $params = VirtualPOS_Helper::build_base_params($order, $this, []);
         
         echo '<div class="payment-container">';
-        VirtualPOS_FormRenderer::render($order, $single_payment_total, $params);
+        VirtualPOS_FormRenderer::render($order, $single_payment_total, $params, $this);
         echo '</div>';
     }    
 

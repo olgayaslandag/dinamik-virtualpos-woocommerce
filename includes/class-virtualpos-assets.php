@@ -60,7 +60,7 @@ class Dinamik_VirtualPOS_Assets
             'dinamik-virtualpos-cardformatter',
             plugin_dir_url(__FILE__) . '../assets/js/CardFormatter.js',
             ['jquery', 'dinamik-virtualpos-utilities'],
-            '1.0.0',
+            '1.0.02',
             true
         );
 
@@ -105,7 +105,7 @@ class Dinamik_VirtualPOS_Assets
             'dinamik-virtualpos-binchecker',
             plugin_dir_url(__FILE__) . '../assets/js/BinChecker.js',
             ['jquery', 'dinamik-virtualpos-cardformatter'],
-            '1.0.07',
+            '1.0.08',
             true
         );
 
@@ -169,6 +169,7 @@ class Dinamik_VirtualPOS_Assets
         );
 
         // PayTR taksit tablosu
+        /*
         $script_url = add_query_arg([
             'merchant_id' => $merchant_id,
             'amount'      => number_format($product_price, 2, '.', ''),
@@ -177,7 +178,7 @@ class Dinamik_VirtualPOS_Assets
             'token'       => 'c050960c0d24067b7f935e8898497cae5a88e0821ecdf268455a5683d8f7705f'
         ], 'https://www.paytr.com/odeme/taksit-tablosu/v2');
 
-        /*
+        
         wp_enqueue_script(
             'paytr-installment-table',
             $script_url,

@@ -7,10 +7,39 @@
 
 if (!defined('ABSPATH')) {
     exit;
-}
+}?>
+<div class="paytr-installment-table-wrapper">
+    <div id="paytr_taksit_tablosu">
+        <?php foreach ($oranlar as $brand => $taksitler): ?>
+            <div class="taksit-tablosu-wrapper">
+                <div class="taksit-logo">
+                    <img src="https://www.paytr.com/img/odeme_sayfasi/<?php echo esc_attr($brand); ?>.png"
+                         alt="<?php echo esc_attr($brand); ?>">
+                </div>
+                <div class="taksit-baslik">
+                    <div class="taksit-tutari-text">Taksit Tutarıı</div>
+                    <div class="taksit-tutari-text">Toplam Tutar</div>
+                </div>
 
+                <?php foreach ($taksitler as $key => $oran): ?>
+                    <?php
+                    if (!preg_match('/taksit_(\d+)/', $key, $m)) continue;
+                    $adet = (int) $m[1];
+                    if ($adet < 2 || $adet > 6) continue;
 
-?>
+                    $toplam = $reflect === "yes" ? $amount * (1 + $oran / 100) : $amount;
+                    $aylik  = $toplam / $adet;
+                    ?>
+                    <div class="taksit-tutar-wrapper<?php echo $toplam == $amount ? ' taksit-tutari-bold' : ''; ?>">
+                        <div class="taksit-tutari"><?php echo $adet . ' x ' . number_format($aylik, 2, ',', '.'); ?> TL</div>
+                        <div class="taksit-tutari"><?php echo number_format($toplam, 2, ',', '.'); ?> TL</div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
 <style>
     #paytr_taksit_tablosu{clear: both;font-size: 12px;max-width: 1200px;text-align: center;font-family: Arial, sans-serif;}
     #paytr_taksit_tablosu::before {display: table;content: " ";}
@@ -24,6 +53,3 @@ if (!defined('ABSPATH')) {
     .taksit-tutari-bold{font-weight: bold;}
     @media all and (max-width: 600px) {.taksit-tablosu-wrapper {margin: 5px 0;}}
 </style>
-<div class="paytr-installment-table-wrapper">
-    <div id="paytr_taksit_tablosu"></div>
-</div>

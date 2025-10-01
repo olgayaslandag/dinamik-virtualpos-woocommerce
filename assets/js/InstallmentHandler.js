@@ -8,6 +8,7 @@
 
             // change event listener, document üzerinden
             $(document).on('change', `#${this.selectId}`, (e) => {
+                $('.pay-button').prop('disabled', true);
                 const selectedOption = $(e.currentTarget).find('option:selected');
                 const price = selectedOption.data('price'); // data-price değeri
                 const installment = selectedOption.val();
@@ -40,6 +41,8 @@
                     $('input[name=installment_count]').val(res.data.params.installment_count);
                     $('input[name=no_installment]').val(res.data.params.no_installment);
                     $('input[name=merchant_oid]').val(res.data.params.merchant_oid);
+
+                    $('.pay-button').prop('disabled', false);
                 },
                 error: (xhr, status, err) => {
                     console.error('AJAX hatası:', err);

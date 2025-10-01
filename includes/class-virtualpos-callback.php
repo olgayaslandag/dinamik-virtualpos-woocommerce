@@ -20,13 +20,16 @@ class CheckoutCallback
 			die( 'PAYTR notification failed: bad hash' );
 		}		
 
+		$order_id = explode( 'PAYTRWOO', sanitize_text_field( $post['merchant_oid'] ) );
+		$order    = new WC_Order( $order_id[1] );
+		
 		$post_status = $order->get_status();
 
-		if ( $post_status == 'wc-pending' or $post_status == 'wc-failed' ) {
+		if ( $post_status == 'pending' or $post_status == 'failed' ) {
 			if ( sanitize_text_field( $post['status'] ) == 'success' ) {
 
 				// Reduce Stock Levels
-				wc_reduce_stock_levels( $order_id[1] );
+				//wc_reduce_stock_levels( $order_id[1] );
 
 				$total_amount    = round( sanitize_text_field( $post['total_amount'] ) / 100, 2 );
 				$payment_amount  = round( sanitize_text_field( $post['payment_amount'] ) / 100, 2 );
@@ -77,8 +80,8 @@ class CheckoutCallback
 				$where = [ 'merchant_oid' => sanitize_text_field( $post['merchant_oid'] ) ];
 				$wpdb->update( $table_prefix . 'paytr_iframe_transaction', $data, $where );
                 */
-				$order->add_order_note( nl2br( $note ) );
-				$order->update_status( 'processing' );
+				$order->add_order_note( nl2br( $note ) );				
+				$order->payment_complete();
 			} else {
 				// Not Başlangıcı
                 $note = "PAYTR BİLDİRİM - Ödeme Başarısız\n";
@@ -100,12 +103,13 @@ class CheckoutCallback
 				$wpdb->update( $table_prefix . 'paytr_iframe_transaction', $data, $where );
                 */
 				$order->add_order_note( nl2br( $note ) );
-				$order->update_status( 'failed' );
+				$order->update_status( 'failed', 'Ödeme başarısız' );
+				$order->save();
 			}
 		}
 
         //Tahsilat Sistemi
-		//do_action('dtahsilat_payment_commit', $post);
+		do_action('payment_commit_hook', $post);
 		
 		echo 'OK';
 		exit;
