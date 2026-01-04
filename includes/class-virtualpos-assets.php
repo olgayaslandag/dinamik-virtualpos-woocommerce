@@ -46,6 +46,27 @@ class Dinamik_VirtualPOS_Assets
         $merchant_id   = $gateway->get_option('merchant_id');
 
         // Ana script ve bağımlılıkları
+
+
+        // SweetAlert2
+        wp_enqueue_script(
+            'dinamik-virtualpos-sweetalert2',
+            'https://cdn.jsdelivr.net/npm/sweetalert2@11',
+            ['jquery'],
+            '11.0.0',
+            true
+        );
+
+        // SweetAlert2 Customizations
+        wp_enqueue_script(
+            'dinamik-virtualpos-sweetalert2-customizations',
+            plugin_dir_url(__FILE__) . '../assets/js/Swal.js',
+            ['dinamik-virtualpos-sweetalert2'],
+            '1.0.0',
+            true
+        );
+
+
         // Utilities.js
         wp_enqueue_script(
             'dinamik-virtualpos-utilities',
@@ -104,8 +125,8 @@ class Dinamik_VirtualPOS_Assets
         wp_enqueue_script(
             'dinamik-virtualpos-binchecker',
             plugin_dir_url(__FILE__) . '../assets/js/BinChecker.js',
-            ['jquery', 'dinamik-virtualpos-cardformatter'],
-            '1.0.08',
+            ['jquery', 'dinamik-virtualpos-cardformatter', 'dinamik-virtualpos-sweetalert2-customizations'],
+            '1.0.16',
             true
         );
 
@@ -123,7 +144,7 @@ class Dinamik_VirtualPOS_Assets
             'dinamik-virtualpos-installmenthandler',
             plugin_dir_url(__FILE__) . '../assets/js/InstallmentHandler.js',
             ['jquery'],
-            '1.0.11',
+            '1.0.13',
             true
         );
 

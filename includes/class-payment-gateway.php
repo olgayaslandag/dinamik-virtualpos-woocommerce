@@ -13,7 +13,8 @@ class Dinamik_VirtualPOS_Gateway extends WC_Payment_Gateway
 
     private function setup_gateway_properties() 
     {
-        $this->id = 'dvirtualpos';
+        //$this->id = 'dvirtualpos';
+        $this->id = 'paytrcheckout';
         $this->icon = '';
         $this->has_fields = false;
         $this->method_title = __('Sanal POS', 'woocommerce');
@@ -36,7 +37,7 @@ class Dinamik_VirtualPOS_Gateway extends WC_Payment_Gateway
     {
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_receipt_' . $this->id, [$this, 'receipt_page']);
-        add_action('woocommerce_api_wc_gateway_paytrcheckout', [$this, 'callback']);
+        add_action('woocommerce_api_wc_gateway_' . $this->id, [$this, 'callback']);
     }
 
     public function init_form_fields() 
@@ -61,6 +62,19 @@ class Dinamik_VirtualPOS_Gateway extends WC_Payment_Gateway
         );
     }
 
+    public function receipt_pagee($order_id)
+    {
+        $order = wc_get_order($order_id);
+
+        $merchant_id = $this->get_option('merchant_id');
+        $merchant_key = $this->get_option('merchant_key');
+        $merchant_salt = $this->get_option('merchant_salt');
+
+
+        require_once plugin_dir_path(__FILE__) . '/../views/form-classic.php';
+        return;
+    }
+    
     public function receipt_page($order_id) 
     {
         $order = wc_get_order($order_id);
@@ -69,11 +83,8 @@ class Dinamik_VirtualPOS_Gateway extends WC_Payment_Gateway
             echo '<p>Ödemeniz alındı. Teşekkür ederiz!</p>';
             return;
         }
-        
-        $discount_rate = intval(get_option('_iskonto_nakit', 10));
-        $discount_multiplier = (100 - $discount_rate) / 100;
-        $single_payment_total = $order->get_total() * $discount_multiplier;
-        
+                
+        $single_payment_total = VirtualPOS_Helper::calculate_single_price($order);
         $params = VirtualPOS_Helper::build_base_params($order, $this, []);
         
         echo '<div class="payment-container">';
@@ -86,13 +97,15 @@ class Dinamik_VirtualPOS_Gateway extends WC_Payment_Gateway
         return 'yes' === $this->enabled;
     }
 
-    public function callback($order)
+    public function callback()
     {
         if (empty($_POST)) {
             die();
         }
 
-        error_log('PayTR Callback Received: ' . print_r($_POST, true));
-        CheckoutCallback::callback($_POST, $this, $order);
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('PayTR Callback: ' . print_r($_POST, true));
+        }
+        CheckoutCallback::callback($_POST, $this);
     } 
 }

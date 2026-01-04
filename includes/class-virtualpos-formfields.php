@@ -28,19 +28,16 @@ class VirtualPOS_FormFields
             'merchant_id' => [
                 'title'   => 'Merchant ID',
                 'type'    => 'number',
-                //'default'     => '432054',
                 'default'     => '616668',
             ],
             'merchant_key' => [
                 'title'   => 'Merchant Key',
                 'type'    => 'text',
-                //'default'     => 'KgYu7pwwHiSFn9nF',
                 'default'     => 'HEWyrpG4P4wDYmLM',
             ],
             'merchant_salt' => [
                 'title'   => 'Merchant Salt',
                 'type'    => 'text',
-                //'default'     => 'kw4Z12zCEqB1cNDx',
                 'default'     => 'T7rcYEhePrX2E7Mr',
             ],
             'test_mode' => [

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kadıoğlu | Kredi Kartı Ödeme</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    font-family: Inter, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 40px;
+    background: #f3f5f7;
+}
+
+.payment-wrapper {
+    max-width: 1000px;
+    margin: auto;
+    background: #fff;
+    border-radius: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    box-shadow: 0 20px 50px rgba(0,0,0,.1);
+}
+
+@media (max-width:900px) {
+    .payment-wrapper {
+        grid-template-columns: 1fr;
+    }
+}
+
+.payment-form {
+    padding: 40px;
+}
+
+.logo img {
+    height: 36px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 22px;
+    margin-bottom: 6px;
+}
+
+.desc {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.field {
+    margin-bottom: 18px;
+    position: relative;
+}
+
+.field label {
+    font-size: 14px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.field input {
+    width: 100%;
+    padding: 14px 14px 14px 40px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 15px;
+}
+
+.field .icon-left {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    width: 18px;
+    opacity: .7;
+}
+
+.field.card-number input {
+    padding-right: 110px;
+}
+
+.field.card-number .card-logos {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 6px;
+}
+
+.field.card-number .card-logos img {
+    height: 20px;
+    opacity: .8;
+}
+
+.select-taksit {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    margin-top: 6px;
+}
+
+.installment-info {
+    background: #f0fdf4;
+    border: 1px dashed #4ade80;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.installment-btn,
+.pay-btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.installment-btn {
+    background: #ecfdf5;
+    border: 1px solid #4ade80;
+}
+
+.pay-btn {
+    background: linear-gradient(135deg, #22c55e, #166c2d);
+    color: #fff;
+}
+
+/* MODAL */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 700px;
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+}
+
+.close {
+    font-size: 22px;
+    cursor: pointer;
+}
+
+/* BANK TABS */
+.banks {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.bank {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 13px;
+}
+
+.bank.active {
+    border-color: #22c55e;
+    background: #ecfdf5;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th, td {
+    padding: 12px;
+}
+
+thead {
+    background: #f1f5f9;
+}
+
+tbody tr:hover {
+    background: #f0fdf4;
+}
+
+tbody tr.active {
+    background: #dcfce7;
+    outline: 2px solid #22c55e;
+}
+</style>
+</head>
+
+<body>
+
+<div class="payment-wrapper">
+
+    <div class="payment-form">
+        <div class="logo">
+            <img src="https://via.placeholder.com/200x40?text=KADIOGLU">
+        </div>
+
+        <h1>Kredi Kartı ile Ödeme</h1>
+        <div class="desc">Güvenli ve hızlı ödeme</div>
+
+        <div class="field">
+            <img src="https://via.placeholder.com/18?text=👤" class="icon-left">
+            <label>Kart Üzerindeki İsim</label>
+            <input type="text" placeholder="Ad Soyad">
+        </div>
+
+        <div class="field card-number">
+            <label>Kart Numarası</label>
+            <input type="text" placeholder="0000 0000 0000 0000">
+            <div class="card-logos">
+                <img src="https://via.placeholder.com/40x20?text=V">
+                <img src="https://via.placeholder.com/40x20?text=M">
+                <img src="https://via.placeholder.com/40x20?text=T">
+            </div>
+        </div>
+
+        <div class="field-group">
+            <div class="field">
+                <label>AA / YY</label>
+                <input type="text">
+            </div>
+            <div class="field">
+                <label>CVV</label>
+                <input type="password">
+            </div>
+        </div>
+
+        <label for="taksit">Taksit Seç</label>
+        <select class="select-taksit" id="taksit">
+            <option value="Peşin">Peşin</option>
+            <option value="2 Taksit">2 Taksit</option>
+            <option value="3 Taksit">3 Taksit</option>
+            <option value="6 Taksit">6 Taksit</option>
+            <option value="9 Taksit">9 Taksit</option>
+        </select>
+
+        <div class="installment-info" id="selectedInstallment">
+            Seçilen Taksit: <span>Peşin</span>
+        </div>
+
+        <button class="installment-btn" onclick="openModal()">Taksit Detayları</button>
+        <button class="pay-btn">Ödemeyi Tamamla</button>
+    </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Taksit Seçenekleri</h2>
+            <div class="close" onclick="closeModal()">×</div>
+        </div>
+
+        <div class="banks">
+            <div class="bank active">Yapı Kredi</div>
+            <div class="bank">Garanti</div>
+            <div class="bank">Akbank</div>
+            <div class="bank">İş Bankası</div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Taksit</th>
+                    <th>Aylık</th>
+                    <th>Toplam</th>
+                </tr>
+            </thead>
+            <tbody id="installments">
+                <tr data-text="2 Taksit - ₺6.200">
+                    <td>2</td><td>₺6.200</td><td>₺12.400</td>
+                </tr>
+                <tr data-text="3 Taksit - ₺4.200">
+                    <td>3</td><td>₺4.200</td><td>₺12.600</td>
+                </tr>
+                <tr data-text="6 Taksit - ₺2.100">
+                    <td>6</td><td>₺2.100</td><td>₺12.600</td>
+                </tr>
+                <tr data-text="9 Taksit - ₺1.450">
+                    <td>9</td><td>₺1.450</td><td>₺13.050</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+const modal = document.getElementById('modal');
+const rows = document.querySelectorAll('#installments tr');
+const info = document.getElementById('selectedInstallment');
+const select = document.getElementById('taksit');
+
+function openModal() {
+    modal.classList.add('active');
+}
+function closeModal() {
+    modal.classList.remove('active');
+}
+
+select.addEventListener('change', () => {
+    info.querySelector('span').innerText = select.value;
+});
+
+rows.forEach(row => {
+    row.addEventListener('click', () => {
+        rows.forEach(r => r.classList.remove('active'));
+        row.classList.add('active');
+        info.querySelector('span').innerText = row.dataset.text;
+        closeModal();
+    });
+});
+</script>
+
+</body>
+</html>

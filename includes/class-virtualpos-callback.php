@@ -1,117 +1,143 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-};
+    exit;
+}
 
 class CheckoutCallback 
 {
-	public static function callback( $post, $gateway, $order ) 
-    {	
-		$hash = base64_encode( 
-            hash_hmac( 
-                'sha256', 
-                sanitize_text_field( $post['merchant_oid'] ) . $gateway->get_option('merchant_salt') . sanitize_text_field( $post['status'] ) . sanitize_text_field( $post['total_amount'] ), 
-                $gateway->get_option('merchant_key'), 
-                true 
-            ) 
+    public static function callback( $post, $gateway ) 
+    {
+        // HASH KONTROL
+        $hash = base64_encode(
+            hash_hmac(
+                'sha256',
+                sanitize_text_field($post['merchant_oid'])
+                . $gateway->get_option('merchant_salt')
+                . sanitize_text_field($post['status'])
+                . sanitize_text_field($post['total_amount']),
+                $gateway->get_option('merchant_key'),
+                true
+            )
         );
 
-		if ( $hash != sanitize_text_field( $post['hash'] ) ) {
-			die( 'PAYTR notification failed: bad hash' );
-		}		
+        if ($hash !== sanitize_text_field($post['hash'])) {
+            die('PAYTR notification failed: bad hash');
+        }
 
-		$order_id = explode( 'PAYTRWOO', sanitize_text_field( $post['merchant_oid'] ) );
-		$order    = new WC_Order( $order_id[1] );
-		
-		$post_status = $order->get_status();
+        // ORDER BUL
+        $order_id = explode('PAYTRWOO', sanitize_text_field($post['merchant_oid']));
+        $order    = wc_get_order($order_id[1]);
 
-		if ( $post_status == 'pending' or $post_status == 'failed' ) {
-			if ( sanitize_text_field( $post['status'] ) == 'success' ) {
+		if (!$order) {
+            die('Order not found');
+        }
 
-				// Reduce Stock Levels
-				//wc_reduce_stock_levels( $order_id[1] );
+        // SADECE BEKLEYEN / FAILED
+        if (!in_array($order->get_status(), ['pending', 'failed'], true)) {
+            echo 'OK';
+            exit;
+        }
 
-				$total_amount    = round( sanitize_text_field( $post['total_amount'] ) / 100, 2 );
-				$payment_amount  = round( sanitize_text_field( $post['payment_amount'] ) / 100, 2 );
-				$installment_dif = $total_amount - $payment_amount;
+        // BAŞARILI ÖDEME
+        if (sanitize_text_field($post['status']) === 'success') {
 
-				// Note Start
-				$note = "PAYTR - Ödeme Onaylandı\n";
-                $note .= "Toplam: " . sanitize_text_field( wc_price( $total_amount, array( 'currency' => $order->get_currency() ) ) ) . "\n";
-                $note .= "Ödenen: " . sanitize_text_field( wc_price( $payment_amount, array( 'currency' => $order->get_currency() ) ) ) . "\n";
+            // 👉 PEŞİN İNDİRİMİ (ÖNCE)
+            self::apply_discount($order, $post);
 
-				if ( $installment_dif > 0 ) {					
-                    $installment_fee = new WC_Order_Item_Fee();
-                    $installment_fee->set_name( __( "Taksit Farkı" ) );
-                    $installment_fee->set_tax_status( 'none' );
-                    $installment_fee->set_total( $installment_dif );
-                    $order->add_item( $installment_fee );
+            $total_amount   = round($post['total_amount'] / 100, 2);
+            $payment_amount = round($post['payment_amount'] / 100, 2);
+            $installment_dif = $total_amount - $payment_amount;
 
-                    $order->calculate_totals();					
+            // TAKSİT FARKI
+            if ($installment_dif > 0) {
+                self::apply_installment_fee($order, $installment_dif);
+            }
 
-					$note .= 'Taksit Farkı: ' . wc_price( $installment_dif, array( 'currency' => $order->get_currency() ) ) . "\n";
-				}
+            // NOT
+            $note  = "PAYTR - Ödeme Onaylandı\n";
+            $note .= "Toplam: " . wc_price($total_amount, ['currency' => $order->get_currency()]) . "\n";
+            $note .= "Ödenen: " . wc_price($payment_amount, ['currency' => $order->get_currency()]) . "\n";
 
-				if ( array_key_exists( 'installment_count', $post ) ) {
-                    $note .= 'Taksit Sayısı: ' . 
-                            ( sanitize_text_field( $post['installment_count'] ) == 1 ? 
-                            'Tek Çekim' : 
-                            sanitize_text_field( $post['installment_count'] ) . ' Taksit' ) . "\n";
-                }
+            if (!empty($post['installment_count'])) {
+                $note .= 'Taksit: ' . ($post['installment_count'] == 1 ? 'Tek Çekim' : $post['installment_count'] . ' Taksit') . "\n";
+            }
 
-                $note .= 'PayTR Sipariş ID: <a href="https://www.paytr.com/magaza/islemler?merchant_oid=' . 
-                        sanitize_text_field( $post['merchant_oid'] ) . 
-                        '" target="_blank">' . 
-                        sanitize_text_field( $post['merchant_oid'] ) . 
-                        '</a>';
+            $order->add_order_note(nl2br($note));
+            $order->payment_complete();
 
-                
-                /*
-				global $wpdb, $table_prefix;
+        } else {
 
-				$data  = [
-					'total_paid'     => $total_amount,
-					'status'         => 'success',
-					'status_message' => 'completed',
-					'is_completed'   => 1,
-					'is_failed'      => 0,
-					'date_updated'   => current_time('mysql')
-				];
-				$where = [ 'merchant_oid' => sanitize_text_field( $post['merchant_oid'] ) ];
-				$wpdb->update( $table_prefix . 'paytr_iframe_transaction', $data, $where );
-                */
-				$order->add_order_note( nl2br( $note ) );				
-				$order->payment_complete();
-			} else {
-				// Not Başlangıcı
-                $note = "PAYTR BİLDİRİM - Ödeme Başarısız\n";
-                $note .= "Hata: " . sanitize_text_field( $post['failed_reason_code'] ) . ' - ' . sanitize_text_field( $post['failed_reason_msg'] ) . "\n";
-                $note .= "PayTR İşlem No: <a href='https://www.paytr.com/magaza/islemler?merchant_oid=" . sanitize_text_field( $post['merchant_oid'] ) . "' target='_blank'>" . sanitize_text_field( $post['merchant_oid'] ) . "</a>";
-				
-                /*
-                global $wpdb, $table_prefix;
+            // BAŞARISIZ
+            $note  = "PAYTR - Ödeme Başarısız\n";
+            $note .= sanitize_text_field($post['failed_reason_code']) . ' - ';
+            $note .= sanitize_text_field($post['failed_reason_msg']);
 
-				$data  = [
-					'total_paid'     => 0,
-					'status'         => 'failed',
-					'status_message' => sanitize_text_field( $post['failed_reason_code'] ) . ' - ' . sanitize_text_field( $post['failed_reason_msg'] ),
-					'is_completed'   => 1,
-					'is_failed'      => 1,
-					'date_updated'   => current_time('mysql')
-				];
-				$where = [ 'merchant_oid' => sanitize_text_field( $post['merchant_oid'] ) ];
-				$wpdb->update( $table_prefix . 'paytr_iframe_transaction', $data, $where );
-                */
-				$order->add_order_note( nl2br( $note ) );
-				$order->update_status( 'failed', 'Ödeme başarısız' );
-				$order->save();
-			}
-		}
+            $order->add_order_note(nl2br($note));
+            $order->update_status('failed');
+        }
 
-        //Tahsilat Sistemi
-		do_action('payment_commit_hook', $post);
-		
-		echo 'OK';
-		exit;
-	}
+        do_action('payment_commit_hook', $post);
+
+        echo 'OK';
+        exit;
+    }
+
+    /**
+     * PEŞİN ÖDEME İNDİRİMİ
+     */
+    private static function apply_discount($order, $post)
+    {
+        $installment_count = intval($post['installment_count'] ?? 0);
+
+        if ($installment_count !== 0) {
+            return;
+        }
+
+        // DAHA ÖNCE EKLENMİŞ Mİ?
+        foreach ($order->get_items('fee') as $fee) {
+            if (strpos($fee->get_name(), 'Peşin Ödeme İndirimi') !== false) {
+                return;
+            }
+        }
+
+        $discount_rate = intval(get_option('_iskonto_nakit', 10));
+        if ($discount_rate <= 0) {
+            return;
+        }
+
+        $discount_amount = round($order->get_subtotal() * ($discount_rate / 100), 2);
+        if ($discount_amount <= 0) {
+            return;
+        }
+
+        $discount = new WC_Order_Item_Fee();
+        $discount->set_name('Peşin Ödeme İndirimi (%' . $discount_rate . ')');
+        $discount->set_amount(-$discount_amount);
+        $discount->set_total(-$discount_amount);
+        $discount->set_tax_status('none');
+
+        $order->add_item($discount);
+        $order->calculate_totals();
+    }
+
+    /**
+     * ➕ TAKSİT FARKI
+     */
+    private static function apply_installment_fee($order, $amount)
+    {
+        foreach ($order->get_items('fee') as $fee) {
+            if ($fee->get_name() === 'Taksit Farkı') {
+                return;
+            }
+        }
+
+        $fee = new WC_Order_Item_Fee();
+        $fee->set_name('Taksit Farkı');
+        $fee->set_amount($amount);
+        $fee->set_total($amount);
+        $fee->set_tax_status('none');
+
+        $order->add_item($fee);
+        $order->calculate_totals();
+    }
 }

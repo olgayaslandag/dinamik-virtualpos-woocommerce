@@ -275,7 +275,7 @@ jQuery(function($) {
 jQuery(function ($) {
     const $cardInput = $('#card-number');      // kart input ID'si
     const $cardInfo  = $('#card-type');       // sonucu yazacağın alan
-    const $select    = $('select#installment');
+    const $select    = $('select#installment_count');
 
     let lastBin = null;
     $cardInput.on('input', function () {

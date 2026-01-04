@@ -9,9 +9,10 @@
         checkBin(e) 
         {
             const digits = Utilities.onlyNumbers($(e.target).val());
-            const $select = $('select#installment');
+            const $select = $('select#installment_count');
             const $info = $('#card-type');
             const $orderTotal = $('input[name=order_total]');
+            const $payButton = $('button.pay-button');
 
             if (digits.length >= 6) {
                 const bin = digits.substr(0,6);
@@ -20,6 +21,9 @@
 
                 
                 $select.html($("<option>", { text: "Hesaplanıyor...", disabled: true }));
+                $payButton.prop('disabled', true);
+                //$payButton.text('')
+                
 
                 $.post(virtualpos_params.ajax_url, {
                     action: 'dinamik_bin_lookup',
@@ -32,6 +36,7 @@
                         $info.text('Kart bilgisi bulunamadı');
                         return;
                     }
+
                     $select.html('');
                     $.each(res.data.prices, (i, price) => {
                         let idx = parseInt(i,10);
@@ -42,8 +47,9 @@
                             value: idx, text, "data-price": price.toplam
                         }));
 
-                        if(idx === 1) {
-                            $('input[name=card_type]').val(price.brand);                            
+                        if(idx === 0) {
+                            $('input[name=card_type]').val(price.brand);   
+                            console.log('Card Type:', price.brand);
                         }
                     });                    
                     
@@ -57,6 +63,9 @@
                     if (res.data.bank_name) label.push(res.data.bank_name);
                     if (res.data.product) label.push(`(${res.data.product})`);
                     $info.text(label.join(' — '));
+
+                    $payButton.prop('disabled', false);
+                    
                 }, 'json').fail(() => {
                     $('#card-type').text('Sorgu hatası');
                 });
