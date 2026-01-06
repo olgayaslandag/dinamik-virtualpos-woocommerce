@@ -3,7 +3,7 @@ class VirtualPOS_Helper {
     
     public static function get_user_ip() 
     {
-        return '176.41.31.147';
+        //return '176.41.31.147';
         if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
             return $_SERVER['HTTP_CLIENT_IP'];
         } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -153,14 +153,12 @@ class VirtualPOS_Helper {
     }
 
     public static function generate_token($params, $merchant_key, $merchant_salt) 
-    {
-        $prices = self::price_format($params['payment_amount']);
-        
+    {        
         $hash_str = $params['merchant_id']
             . $params['user_ip']
             . $params['merchant_oid']
             . $params['email']
-            . $prices['price_tl']
+            . $params['payment_amount']
             . $params['payment_type']
             . $params['installment_count']
             . $params['currency']
@@ -187,29 +185,31 @@ class VirtualPOS_Helper {
         
         // Fiyat belirleme
         $final_price = $is_single_payment 
-        ? self::calculate_single_price($order) 
-        : ($price ?? $order->get_total());
-
-        //$final_price = $order->get_total();
+            ? self::calculate_single_price($order) 
+            : ($price ?? $order->get_total());
 
         $prices = self::price_format($final_price);
-        // Fiyatı formatla
-        //$final_price_formatted = number_format($final_price, 2, '.', '');
-        
+         
+        /*
         // Sepet oluştur
         $basket_data = self::build_basket(
             $order, 
             $is_single_payment,  // Peşin ödemede indirim uygula
-            $final_price        // Hedef tutar
+            $prices['price_tl']        // Hedef tutar
         );
         
         // Sepet doğrula (debug için)
         if ($test_mode == '1') {
             self::validate_basket($basket_data['basket'], $prices['price_tl']);
         }
+
+        */
+        $user_basket = self::encode_basket([
+            ['PayTR Ürünü', $prices['price_tl'], 1]
+        ]);
         
         // Sepeti encode et
-        $user_basket = self::encode_basket($basket_data['basket']);
+        //$user_basket = self::encode_basket($basket_data['basket']);
         
         // PayTR parametreleri
         $params = [
@@ -220,14 +220,12 @@ class VirtualPOS_Helper {
             'email'              => $order->get_billing_email(),
             'payment_type'       => 'card',
             'payment_amount'     => $prices['price_tl'],
-            'installment_count'  => $installment_count,  // 0 = peşin, 2-12 = taksitli
+            'installment_count'  => $installment_count, 
             'currency'           => 'TL',
             'test_mode'          => $test_mode,
-            'non_3d'             => '0',  // 3D Secure aktif
-            'client_lang'        => 'tr',
-            //'no_installment'     => '0',
-            'max_installment'    => '12',
-            //'lang'               => 'tr',
+            'non_3d'             => '0',
+            'client_lang'        => 'tr',            
+            'max_installment'    => '6',            
             'card_type'          => '',
             
             // URL'ler
@@ -241,11 +239,10 @@ class VirtualPOS_Helper {
             'user_basket'        => $user_basket,
             
             // Debug ve test
-            'debug_on'           => '1',
+            'debug_on'           => $test_mode,
             'non3d_test_failed'  => '0',
         ];
 
-        // Token oluştur
         $params['paytr_token'] = self::generate_token($params, $merchant_key, $merchant_salt);
 
         return $params;

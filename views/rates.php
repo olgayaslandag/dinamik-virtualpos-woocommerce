@@ -16,10 +16,28 @@ if (!defined('ABSPATH')) {
                     <img src="https://www.paytr.com/img/odeme_sayfasi/<?php echo esc_attr($brand); ?>.png"
                          alt="<?php echo esc_attr($brand); ?>">
                 </div>
+                
                 <div class="taksit-baslik">
                     <div class="taksit-tutari-text">Taksit Tutarıı</div>
                     <div class="taksit-tutari-text">Toplam Tutar</div>
                 </div>
+
+                <?php
+                /** =========================
+                 *  PEŞİN (TEK ÇEKİM)
+                 *  ========================= */
+                if (isset($taksitler['tek_cekim'])):
+                    $pesin_toplam = (float) $taksitler['tek_cekim'];
+                ?>
+                    <div class="taksit-tutar-wrapper taksit-tutari-bold">
+                        <div class="taksit-tutari">
+                            Tek Çekim
+                        </div>
+                        <div class="taksit-tutari">
+                            <?php echo number_format($pesin_toplam, 2, ',', '.'); ?> TL
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <?php foreach ($taksitler as $key => $oran): ?>
                     <?php

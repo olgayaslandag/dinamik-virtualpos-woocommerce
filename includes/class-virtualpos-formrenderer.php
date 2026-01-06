@@ -23,6 +23,14 @@ class VirtualPOS_FormRenderer
         $amount  = $order->get_total();
         $reflect = $gateway->get_option('reflect');
 
+
+        // Her kart için peşin fiyat ekle
+        foreach ($oranlar as $cardType => &$rates) {
+            $rates = array_merge(
+                ['tek_cekim' => $amount * 0.9],
+                $rates
+            );
+        }
         VirtualPOS_Helper::load_template('rates', compact('oranlar', 'amount', 'reflect'));
     }
 }

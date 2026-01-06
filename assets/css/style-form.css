@@ -4,6 +4,7 @@
     width: 100%;
     margin-right: 15px;
     max-width: 600px!important;
+    background-color: white;
 }
 .payment-form-container form {
     padding: 25px;    
@@ -153,4 +154,12 @@ input.valid {
 
 .taksit-tablosu-wrapper {
     border: 0!important;
+}
+
+.paytr-fail-message {
+    padding: 1rem;
+    font-size: 0.9rem;
+    background-color: red;
+    color: white;
+    margin: 0 1.5rem;   
 }

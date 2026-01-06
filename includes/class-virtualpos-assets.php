@@ -19,7 +19,7 @@ class Dinamik_VirtualPOS_Assets
             'dinamik-virtualpos-main',
             plugin_dir_url(__FILE__) . '../assets/css/style.css',
             [],
-            '1.1.0'
+            '1.1.2'
         );
     }
 
@@ -126,7 +126,7 @@ class Dinamik_VirtualPOS_Assets
             'dinamik-virtualpos-binchecker',
             plugin_dir_url(__FILE__) . '../assets/js/BinChecker.js',
             ['jquery', 'dinamik-virtualpos-cardformatter', 'dinamik-virtualpos-sweetalert2-customizations'],
-            '1.0.16',
+            '1.0.22',
             true
         );
 

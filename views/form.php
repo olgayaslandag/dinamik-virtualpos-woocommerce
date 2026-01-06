@@ -1,6 +1,14 @@
 <div class="payment-form-container">
     <h2>Kredi Kartı ile Ödeme</h2>
     
+    <?php if(isset($_POST['fail_message'])): ?>
+    <div class="paytr-fail-message">
+        <?php echo $params['fail_message']; ?>
+    </div>
+    <?php endif; ?>
+
+
+
     <form class="virtualpos_payment_form" method="post" action="https://www.paytr.com/odeme">
         <?php wp_nonce_field('virtualpos_payment_action', 'virtualpos_payment_nonce'); ?> 
         <input type="hidden" name="single_payment_total" value="<?php echo $single_payment_total; ?>">

@@ -44,12 +44,12 @@ class CheckoutCallback
             // 👉 PEŞİN İNDİRİMİ (ÖNCE)
             self::apply_discount($order, $post);
 
-            $total_amount   = round($post['total_amount'] / 100, 2);
             $payment_amount = round($post['payment_amount'] / 100, 2);
-            $installment_dif = $total_amount - $payment_amount;
+            $total_amount = round((float) $order->get_total(), 2);
+            $installment_dif = round($total_amount - $payment_amount, 2);
 
             // TAKSİT FARKI
-            if ($installment_dif > 0) {
+            if ($post['installment_count'] == 1) {
                 self::apply_installment_fee($order, $installment_dif);
             }
 
@@ -123,21 +123,37 @@ class CheckoutCallback
     /**
      * ➕ TAKSİT FARKI
      */
-    private static function apply_installment_fee($order, $amount)
+    private static function apply_installment_fee(WC_Order $order, float $amount)
     {
+        // Önceden eklenmiş mi kontrol et
         foreach ($order->get_items('fee') as $fee) {
-            if ($fee->get_name() === 'Taksit Farkı') {
+            if (in_array($fee->get_name(), ['Taksit Farkı', 'Tek Çekim İndirimi'], true)) {
                 return;
             }
         }
 
+        // İndirim = negatif fee
+        $discount = abs($amount);
+
         $fee = new WC_Order_Item_Fee();
-        $fee->set_name('Taksit Farkı');
-        $fee->set_amount($amount);
-        $fee->set_total($amount);
+        $fee->set_name('Tek Çekim İndirimi');
+
+        // 🔴 KRİTİK: Fee KDV HARİÇ net tutar
+        $fee->set_amount(-$discount);
+        $fee->set_total(-$discount);
+
+        // Vergiyi TAMAMEN kapat
         $fee->set_tax_status('none');
+        $fee->set_tax_class('');
+        $fee->set_taxes([
+            'total'    => [],
+            'subtotal' => [],
+        ]);
+        $fee->set_total_tax(0);
 
         $order->add_item($fee);
-        $order->calculate_totals();
+
+        // ❗ Vergileri yeniden dağıtmasın
+        $order->calculate_totals(false);
     }
 }

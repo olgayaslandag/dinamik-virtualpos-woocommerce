@@ -100,14 +100,12 @@ class Dinamik_VirtualPOS {
             $order,
             new Dinamik_VirtualPOS_Gateway(),
             absint($_POST['installment_count'] ?? 0),
-            round($_POST['price'], 2) ?? null
+            //round($_POST['price'], 2) ?? null
         );
         
-        error_log('PARAMS: ' . print_r($params, true));
         wp_send_json_success([
             'message' => 'Retoken başarılı',
             'params'  => $params,
-            //'post'    => $_POST,
         ]);
     }
 }
